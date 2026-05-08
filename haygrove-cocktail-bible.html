@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Haygrove Classic Cocktail Bible</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Helvetica+Neue:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F7F2E8;
+    --bg-light: #EBE4DB;
+    --text: #302C28;
+    --text-muted: #71675D;
+    --accent: #E7560D;
+    --border: #BAAFA0;
+    --white: #FFFFFF;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'EB Garamond', Georgia, serif;
+    height: 100%;
+  }
+
+  .bible-wrap {
+    display: flex;
+    height: 600px;
+    border: 0.5px solid var(--border);
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  .left-panel {
+    width: 100%;
+    transition: width 0.35s cubic-bezier(0.4,0,0.2,1);
+    border-right: 0.5px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .left-panel.collapsed { width: 38%; }
+
+  .right-panel {
+    width: 0;
+    overflow: hidden;
+    transition: width 0.35s cubic-bezier(0.4,0,0.2,1);
+    background: var(--bg);
+  }
+
+  .right-panel.open { width: 62%; }
+
+  .search-wrap {
+    padding: 14px 16px;
+    border-bottom: 0.5px solid var(--border);
+    background: var(--bg);
+  }
+
+  .search-wrap input {
+    width: 100%;
+    padding: 8px 10px;
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    background: var(--bg-light);
+    border: 0.5px solid var(--border);
+    color: var(--text);
+    outline: none;
+  }
+
+  .search-wrap input::placeholder { color: var(--border); }
+
+  .filters {
+    padding: 10px 16px;
+    border-bottom: 0.5px solid var(--border);
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    background: var(--bg);
+  }
+
+  .filter-btn {
+    padding: 3px 10px;
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    background: transparent;
+    border: 0.5px solid var(--border);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .filter-btn:hover { border-color: var(--text-muted); color: var(--text); }
+  .filter-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+  .cocktail-list {
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .cocktail-list::-webkit-scrollbar { width: 3px; }
+  .cocktail-list::-webkit-scrollbar-track { background: var(--bg); }
+  .cocktail-list::-webkit-scrollbar-thumb { background: var(--border); }
+
+  .cocktail-item {
+    padding: 13px 16px;
+    border-bottom: 0.5px solid var(--border);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.1s;
+  }
+
+  .cocktail-item:hover { background: var(--bg-light); }
+
+  .cocktail-item.active {
+    background: var(--text);
+  }
+
+  .cocktail-item.active .c-name { color: var(--bg); }
+  .cocktail-item.active .c-spirit { color: var(--border); }
+
+  .c-name {
+    font-family: 'EB Garamond', serif;
+    font-size: 16px;
+    color: var(--text);
+  }
+
+  .c-spirit {
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .no-results {
+    padding: 24px 16px;
+    font-style: italic;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+
+  .recipe-card {
+    padding: 32px 36px;
+    height: 100%;
+    overflow-y: auto;
+  }
+
+  .recipe-card::-webkit-scrollbar { width: 3px; }
+  .recipe-card::-webkit-scrollbar-track { background: var(--bg); }
+  .recipe-card::-webkit-scrollbar-thumb { background: var(--border); }
+
+  .recipe-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2px;
+  }
+
+  .recipe-title {
+    font-family: 'EB Garamond', serif;
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 22px;
+    font-family: 'EB Garamond', serif;
+    padding: 0 0 0 12px;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+
+  .close-btn:hover { color: var(--text); }
+
+  .recipe-spirit-tag {
+    display: block;
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 24px;
+  }
+
+  .section-label {
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+
+  .ingredient-list {
+    list-style: none;
+    margin-bottom: 4px;
+  }
+
+  .ingredient-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 6px 0;
+    border-bottom: 0.5px solid var(--bg-light);
+    font-size: 15px;
+    color: var(--text);
+  }
+
+  .ingredient-list li span {
+    font-style: italic;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+
+  .divider {
+    height: 0.5px;
+    background: var(--border);
+    margin: 22px 0;
+  }
+
+  .method-text {
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.75;
+  }
+
+  .source-text {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .fact-box {
+    border-left: 2px solid var(--accent);
+    padding: 10px 14px;
+    margin-top: 10px;
+    background: var(--bg-light);
+  }
+
+  .fact-box p {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    font-style: italic;
+  }
+
+  .empty-state {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-style: italic;
+    color: var(--border);
+    font-size: 15px;
+    text-align: center;
+    padding: 40px;
+  }
+</style>
+</head>
+<body>
+
+<div class="bible-wrap" id="bible">
+  <div class="left-panel" id="left">
+    <div class="search-wrap">
+      <input type="text" id="search" placeholder="Search classics..." oninput="render()">
+    </div>
+    <div class="filters" id="filters">
+      <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+      <button class="filter-btn" onclick="setFilter('whisky',this)">Whisky</button>
+      <button class="filter-btn" onclick="setFilter('gin',this)">Gin</button>
+      <button class="filter-btn" onclick="setFilter('rum',this)">Rum</button>
+      <button class="filter-btn" onclick="setFilter('vodka',this)">Vodka</button>
+      <button class="filter-btn" onclick="setFilter('tequila',this)">Tequila</button>
+      <button class="filter-btn" onclick="setFilter('non-alcoholic',this)">Non-Alcoholic</button>
+    </div>
+    <div class="cocktail-list" id="list"></div>
+  </div>
+  <div class="right-panel" id="right">
+    <div class="recipe-card" id="card">
+      <div class="empty-state">Select a cocktail to view the recipe</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const cocktails = [
+  {
+    name: "Negroni",
+    spirit: "gin",
+    ingredients: [["Gin","30ml"],["Campari","30ml"],["Sweet Vermouth","30ml"]],
+    method: "Stir all ingredients over ice until well chilled. Strain into a rocks glass over a large ice cube. Express an orange peel over the glass and use as garnish.",
+    source: "Attributed to Count Camillo Negroni, Florence, 1919",
+    fact: "The Negroni is believed to have been created when Count Negroni asked his bartender to strengthen his Americano by replacing the soda water with gin."
+  },
+  {
+    name: "Old Fashioned",
+    spirit: "whisky",
+    ingredients: [["Bourbon or Rye","60ml"],["Sugar syrup","5ml"],["Angostura bitters","2 dashes"],["Orange bitters","1 dash"]],
+    method: "Add sugar syrup and bitters to a rocks glass. Add ice and whisky. Stir gently to combine. Garnish with an expressed orange peel.",
+    source: "Pendennis Club, Louisville, Kentucky, 1880s",
+    fact: "The Old Fashioned is widely considered the original cocktail — the word cocktail was once defined as a spirit, sugar, water and bitters."
+  },
+  {
+    name: "Martini",
+    spirit: "gin",
+    ingredients: [["Gin","60ml"],["Dry Vermouth","10ml"]],
+    method: "Stir gin and vermouth over ice until very cold. Strain into a chilled martini glass. Garnish with a lemon twist or olive depending on preference.",
+    source: "The Savoy Cocktail Book, 1930",
+    fact: "Churchill allegedly made his Martini by simply glancing at a bottle of vermouth from across the room. The ratio of gin to vermouth remains a matter of fierce personal preference."
+  },
+  {
+    name: "Daiquiri",
+    spirit: "rum",
+    ingredients: [["White Rum","60ml"],["Fresh lime juice","22ml"],["Sugar syrup","15ml"]],
+    method: "Shake all ingredients hard with ice. Double strain into a chilled coupe. No garnish needed.",
+    source: "Mining camps of Cuba, early 1900s",
+    fact: "Ernest Hemingway was a devoted drinker of the Papa Doble — a double daiquiri with no sugar and extra lime. He reportedly drank sixteen of them in a single sitting."
+  },
+  {
+    name: "Whisky Sour",
+    spirit: "whisky",
+    ingredients: [["Bourbon","50ml"],["Fresh lemon juice","25ml"],["Sugar syrup","15ml"],["Egg white","1 fresh"]],
+    method: "Dry shake all ingredients without ice to emulsify the egg white. Add ice and shake hard again. Strain into a rocks glass over ice or a coupe straight up. Garnish with Angostura bitters dotted on the foam.",
+    source: "Jerry Thomas, How to Mix Drinks, 1862",
+    fact: "The egg white adds texture and a silky foam rather than flavour. The technique of dry shaking first is essential to achieving a proper emulsion."
+  },
+  {
+    name: "Margarita",
+    spirit: "tequila",
+    ingredients: [["Tequila Blanco","50ml"],["Fresh lime juice","25ml"],["Triple Sec","20ml"],["Salt","for rim"]],
+    method: "Salt half the rim of a rocks glass. Shake all ingredients hard with ice. Strain into the glass over fresh ice.",
+    source: "Various disputed origins, Mexico, 1930s–40s",
+    fact: "The exact origin of the Margarita is disputed by at least five different people across Mexico and the United States. What is agreed is that it is better made fresh."
+  },
+  {
+    name: "Espresso Martini",
+    spirit: "vodka",
+    ingredients: [["Vodka","40ml"],["Fresh espresso","30ml"],["Coffee liqueur","20ml"],["Sugar syrup","5ml"]],
+    method: "Shake all ingredients very hard with ice — the key to achieving the foam. Double strain into a chilled coupe. Garnish with three coffee beans.",
+    source: "Dick Bradsell, Soho, London, 1983",
+    fact: "Dick Bradsell invented this drink for a model who asked for something to wake her up and then mess her up. It remains one of the most ordered cocktails in the world."
+  },
+  {
+    name: "Virgin Mary",
+    spirit: "non-alcoholic",
+    ingredients: [["Tomato juice","120ml"],["Fresh lemon juice","15ml"],["Worcestershire sauce","3 dashes"],["Tabasco","2 dashes"],["Celery salt","pinch"],["Black pepper","pinch"]],
+    method: "Build in a highball glass over ice. Stir gently. Garnish with a celery stick and lemon wedge. Season to taste.",
+    source: "Haygrove",
+    fact: "A properly made Virgin Mary is one of the most complex and satisfying non-alcoholic drinks available. The balance of acid, salt, heat and umami makes it genuinely compelling without spirits."
+  }
+];
+
+let activeFilter = 'all';
+let activeIndex = null;
+
+function setFilter(spirit, btn) {
+  activeFilter = spirit;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeIndex = null;
+  closeCard();
+  render();
+}
+
+function render() {
+  const search = document.getElementById('search').value.toLowerCase();
+  const list = document.getElementById('list');
+  list.innerHTML = '';
+  const filtered = cocktails.filter((c, i) => {
+    if (activeFilter !== 'all' && c.spirit !== activeFilter) return false;
+    if (search && !c.name.toLowerCase().includes(search)) return false;
+    return true;
+  });
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="no-results">No classics found.</div>';
+    return;
+  }
+  filtered.forEach(c => {
+    const originalIndex = cocktails.indexOf(c);
+    const item = document.createElement('div');
+    item.className = 'cocktail-item' + (activeIndex === originalIndex ? ' active' : '');
+    item.innerHTML = `<span class="c-name">${c.name}</span><span class="c-spirit">${c.spirit}</span>`;
+    item.onclick = () => selectCocktail(originalIndex, item);
+    list.appendChild(item);
+  });
+}
+
+function selectCocktail(index, el) {
+  activeIndex = index;
+  document.querySelectorAll('.cocktail-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('left').classList.add('collapsed');
+  document.getElementById('right').classList.add('open');
+  const c = cocktails[index];
+  document.getElementById('card').innerHTML = `
+    <div class="recipe-header">
+      <h1 class="recipe-title">${c.name}</h1>
+      <button class="close-btn" onclick="closeCard()" aria-label="Close recipe">×</button>
+    </div>
+    <span class="recipe-spirit-tag">${c.spirit}</span>
+    <div class="section-label">Ingredients</div>
+    <ul class="ingredient-list">
+      ${c.ingredients.map(([n,a]) => `<li>${n}<span>${a}</span></li>`).join('')}
+    </ul>
+    <div class="divider"></div>
+    <div class="section-label">Method</div>
+    <p class="method-text">${c.method}</p>
+    <div class="divider"></div>
+    <div class="section-label">Source</div>
+    <p class="source-text">${c.source}</p>
+    ${c.fact ? `
+    <div class="divider"></div>
+    <div class="section-label">Note</div>
+    <div class="fact-box"><p>${c.fact}</p></div>` : ''}
+  `;
+}
+
+function closeCard() {
+  activeIndex = null;
+  document.getElementById('left').classList.remove('collapsed');
+  document.getElementById('right').classList.remove('open');
+  document.getElementById('card').innerHTML = '<div class="empty-state">Select a cocktail to view the recipe</div>';
+  document.querySelectorAll('.cocktail-item').forEach(i => i.classList.remove('active'));
+}
+
+render();
+</script>
+</body>
+</html>
