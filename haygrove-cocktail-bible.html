@@ -350,7 +350,7 @@ const cocktails = [
   {
     name: "Dark and Stormy",
     spirit: "rum",
-    ingredients: [["Gosling's Black Seal Rum","60ml"],["Fresh lime juice","20ml"],,["Angostura bitters","1 dash"],["Ginger Beer","to top"],["Lime wedge","to garnish"]],
+    ingredients: [["Gosling's Black Seal Rum","60ml"],["Fresh lime juice","20ml"],["Angostura bitters","1 dash"],["Ginger Beer","to top"],["Lime wedge","to garnish"]],
     method: "Combine the rum, lime juice and bitters in a shaker and whip shake with a few pieces of crushed ice until just incorporated. Strain into a highball glass over fresh ice. Top with ginger beer. Garnish with a lime wedge and serve with a straw.",
     fact: ""
   },
@@ -420,8 +420,6 @@ function selectCocktail(index, el) {
     <div class="section-label">Method</div>
     <p class="method-text">${c.method}</p>
     <div class="divider"></div>
-    <div class="section-label">Source</div>
-    <p class="source-text">${c.source}</p>
     ${c.fact ? `
     <div class="divider"></div>
     <div class="section-label">Note</div>
